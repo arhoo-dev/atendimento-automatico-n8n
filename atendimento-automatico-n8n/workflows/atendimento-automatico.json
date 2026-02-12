@@ -1,0 +1,328 @@
+{
+  "name": "AutoAtendimento-IA",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "17269eec-70b2-4afb-a72a-f5ba4d92f65f",
+              "name": "Nome",
+              "value": "={{ $json.Nome }}",
+              "type": "string"
+            },
+            {
+              "id": "0bbce042-f40e-44ec-a840-caa77ee92403",
+              "name": "E-mail",
+              "value": "={{ $json['E-mail'] }}",
+              "type": "string"
+            },
+            {
+              "id": "19ef5d0d-4055-4598-a9d4-3389e3a8d853",
+              "name": "Mensagem",
+              "value": "={{ $json.Mensagem }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1296,
+        -816
+      ],
+      "id": "d69b8d7c-1999-4250-849f-3bf80066e796",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "formTitle": "Formulário de Atendimento",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Nome",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "E-mail",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Mensagem",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.5,
+      "position": [
+        -1424,
+        -816
+      ],
+      "id": "cec041b9-7a68-4d6f-b108-c98c2284f49d",
+      "name": "Self Servicing Form",
+      "webhookId": "4be10695-c8cf-4d95-9668-29857868fee6"
+    },
+    {
+      "parameters": {
+        "jsCode": "const EMPRESA = {\n  nome: \"Ark Serviços em TI\",\n  segmento: \"Pequena Empresa\",\n  cidade: \"Anápolis\",\n  horario: \"Seg–Sex 09:00–18:00\",\n  servicos: \"Automações, SaaS e aplicações No/Low-Code\",\n  politicas: \"Não informar preços exatos sem avaliação; solicitar dados adicionais quando necessário.\"\n};\n\nconst nome = $json.Nome || $json.nome || \"Cliente\";\nconst email = $json[\"E-mail\"] || $json.email || \"\";\nconst mensagem = $json.Mensagem || $json.mensagem || \"\";\n\nconst prompt = `\nVocê é um atendente virtual profissional da empresa ${EMPRESA.nome}.\n\nSeu objetivo é responder à mensagem do cliente de forma clara, objetiva, cordial e estratégica, conduzindo o atendimento para o próximo passo.\n\nINFORMAÇÕES DA EMPRESA:\nNome: ${EMPRESA.nome}\nSegmento: ${EMPRESA.segmento}\nCidade: ${EMPRESA.cidade}\nHorário de atendimento: ${EMPRESA.horario}\nServiços oferecidos: ${EMPRESA.servicos}\nPolíticas internas: ${EMPRESA.politicas}\n\nREGRAS IMPORTANTES:\n1. Seja profissional e direto.\n2. Nunca invente preços, prazos ou garantias.\n3. Se faltarem informações, faça no máximo 1 pergunta objetiva.\n4. Sempre incentive um próximo passo (ex: agendar conversa, solicitar WhatsApp, pedir mais detalhes).\n5. Utilize linguagem natural em PT-BR.\n6. Evite repetições desnecessárias.\n7. Não utilize emojis.\n\nDADOS DO CLIENTE:\nNome: ${nome}\nEmail: ${email}\nMensagem enviada:\n\"${mensagem}\"\n\nGere uma resposta personalizada para esse cliente.\n\nIMPORTANTE:\n- Responda SOMENTE com um JSON válido.\n- NÃO use markdown.\n- NÃO use blocos de código.\n- NÃO use crases.\n- NÃO inclua texto antes ou depois do JSON.\n- NÃO inclua explicações.\n\nFormato exato de saída:\n{\"assunto\":\"...\",\"mensagem\":\"...\",\"pergunta_followup\":\"...\"}\n\nResponda agora apenas com o JSON nesse formato.\n`;\n\nreturn [{ ...$json, prompt }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1168,
+        -816
+      ],
+      "id": "c7cd49ff-ba6e-4976-914c-1d0694b41028",
+      "name": "Prompt Setting"
+    },
+    {
+      "parameters": {
+        "jsCode": "const prompt = $json.prompt || \"\";\n\n// Monta o payload como OBJETO JS\nconst payloadObj = {\n  contents: [\n    {\n      role: \"user\",\n      parts: [{ text: prompt }]\n    }\n  ],\n  generationConfig: {\n    temperature: 0.4,\n    maxOutputTokens: 500,\n    responseMimeType: \"application/json\"\n  }\n};\n\n// Converte para STRING JSON válida\nconst payload = JSON.stringify(payloadObj);\n\nreturn [{\n  ...$json,\n  geminiPayload: payload\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        -816
+      ],
+      "id": "b58cacdb-c9ab-47d5-8b17-c3434e26f1cc",
+      "name": "Build Gemini JSON"
+    },
+    {
+      "parameters": {
+        "fromEmail": "adrielrhoo@gmail.com",
+        "toEmail": "={{$json.email}}",
+        "subject": "={{ $json.emailSubject }}",
+        "emailFormat": "text",
+        "text": "={{$json.emailBody}}\n",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        -288,
+        -656
+      ],
+      "id": "f44a33d0-f822-4abb-9e98-e3a9f6da50d6",
+      "name": "Send an Email",
+      "webhookId": "f3301ecb-a286-4968-9c07-017d177d87b8",
+      "credentials": {
+        "smtp": {
+          "id": "ABv223f4yYhdbqZw",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4b544699-f69d-4bed-844d-f3fbecb28940",
+              "name": "toEmail",
+              "value": "={{$json[\"E-mail\"]}}\n",
+              "type": "string"
+            },
+            {
+              "id": "0f6e642a-fb49-41df-b4bb-9a73076066fd",
+              "name": "nome",
+              "value": "={{$json[\"Nome\"]}}\n",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -912,
+        -816
+      ],
+      "id": "edf8aef7-e8bb-4e0f-8487-34ae6e9bd62b",
+      "name": "Keep Content"
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -544,
+        -656
+      ],
+      "id": "b197e08d-2600-4507-beef-1f5b9f3a89a5",
+      "name": "Merge"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Texto bruto do Gemini (HTTP Request -> response)\nconst raw =\n  $json.candidates?.[0]?.content?.parts?.[0]?.text ||\n  $json.text ||\n  \"\";\n\n// Limpa possíveis code fences e aspas “curly”\nlet cleaned = String(raw)\n  .replace(/```json/gi, \"```\")\n  .replace(/```/g, \"\")\n  .replace(/[“”]/g, '\"')\n  .replace(/[‘’]/g, \"'\")\n  .trim();\n\n// Tenta isolar apenas o JSON (do primeiro { ao último })\nlet obj;\ntry {\n  const start = cleaned.indexOf(\"{\");\n  const end = cleaned.lastIndexOf(\"}\");\n  const jsonStr =\n    start !== -1 && end !== -1 ? cleaned.slice(start, end + 1) : cleaned;\n\n  obj = JSON.parse(jsonStr);\n} catch (e) {\n  // fallback: mantém algo legível para o cliente\n  obj = {\n    assunto: \"Retorno sobre sua solicitação – Ark TI\",\n    mensagem:\n      \"Recebemos sua mensagem, mas houve um problema ao processar automaticamente a resposta. Em breve entraremos em contato manualmente para dar continuidade ao atendimento.\",\n    pergunta_followup: \"\",\n  };\n}\n\n// Normaliza nome/email (ajuste se suas chaves forem diferentes)\nconst nome = $json.nome || $json.Nome || \"Cliente\";\nconst email = String($json.email || $json.Email || $json[\"E-mail\"] || \"\").trim();\n\n// Monta assunto + corpo final\nconst emailSubject =\n  obj.assunto && String(obj.assunto).trim()\n    ? String(obj.assunto).trim()\n    : \"Retorno sobre sua solicitação – Ark TI\";\n\nconst mensagemPrincipal = String(obj.mensagem || \"\").trim();\nconst perguntaFollowup = String(obj.pergunta_followup || \"\").trim();\n\nlet emailBody = `Olá ${nome},\n\n${mensagemPrincipal}`;\n\nif (perguntaFollowup) {\n  emailBody += `\n\n${perguntaFollowup}`;\n}\n\nemailBody += `\n\nAtenciosamente,\nArk Serviços em TI`;\n\n// Retorna mantendo os campos anteriores\nreturn [\n  {\n    ...$json,\n    ia_raw: raw,\n    ia_obj: obj,\n    email,\n    nome,\n    emailSubject,\n    emailBody,\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -416,
+        -656
+      ],
+      "id": "b9ffbc0c-2b37-45a8-9739-9475d97e91ac",
+      "name": "Parse IA"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "AIzaSyA34n_eAXsjQFyJD3cwePivdX2rn_e_Yzk"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $('Build Gemini JSON').item.json.geminiPayload }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        -688,
+        -816
+      ],
+      "id": "3e40e090-c7b0-442a-84fa-43474566d331",
+      "name": "HTTP Request Gemini AI"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Prompt Setting",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Self Servicing Form": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prompt Setting": {
+      "main": [
+        [
+          {
+            "node": "Build Gemini JSON",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Gemini JSON": {
+      "main": [
+        [
+          {
+            "node": "Keep Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep Content": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request Gemini AI",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Parse IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse IA": {
+      "main": [
+        [
+          {
+            "node": "Send an Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request Gemini AI": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "8daa29b3-8c0b-4429-9b79-417c227dc254",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "86bd879c48462ab06917a42c43c265db9c3f0ea3df0f181b4b6c8183dc179985"
+  },
+  "id": "WS724HGi31cCm6GE",
+  "tags": []
+}
