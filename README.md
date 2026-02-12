@@ -1,4 +1,4 @@
-\# 🤖 Atendimento Automático para Pequenas Empresas com n8n
+# 🤖 Atendimento Automático para Pequenas Empresas com n8n
 
 
 
@@ -10,7 +10,7 @@ Sistema de atendimento automático via formulário web, processamento com IA (Ge
 
 
 
-\## 📋 Sobre o Projeto
+## 📋 Sobre o Projeto
 
 
 
@@ -36,7 +36,7 @@ Este projeto implementa um fluxo de automação no \*\*n8n\*\* que:
 
 
 
-\## 🛠️ Tecnologias Utilizadas
+## 🛠️ Tecnologias Utilizadas
 
 
 
@@ -52,7 +52,7 @@ Este projeto implementa um fluxo de automação no \*\*n8n\*\* que:
 
 
 
-\## 📦 Estrutura do Workflow
+## 📦 Estrutura do Workflow
 
 
 
@@ -80,7 +80,7 @@ O workflow é composto por \*\*9 nodes\*\*:
 
 
 
-\### Diagrama Visual
+### Diagrama Visual
 
 
 
@@ -92,11 +92,11 @@ O workflow é composto por \*\*9 nodes\*\*:
 
 
 
-\## ⚙️ Configuração
+## ⚙️ Configuração
 
 
 
-\### Pré-requisitos
+### Pré-requisitos
 
 
 
@@ -108,11 +108,11 @@ O workflow é composto por \*\*9 nodes\*\*:
 
 
 
-\### Passo a Passo
+### Passo a Passo
 
 
 
-\#### 1. Importar o Workflow
+#### 1. Importar o Workflow
 
 
 
@@ -124,7 +124,7 @@ O workflow é composto por \*\*9 nodes\*\*:
 
 
 
-\#### 2. Configurar a API do Gemini
+#### 2. Configurar a API do Gemini
 
 
 
@@ -136,7 +136,7 @@ O workflow é composto por \*\*9 nodes\*\*:
 
 
 
-\#### 3. Configurar o SMTP
+#### 3. Configurar o SMTP
 
 
 
@@ -160,7 +160,7 @@ No node \*\*Send Email\*\*:
 
 
 
-\#### 4. Personalizar os Dados da Empresa
+#### 4. Personalizar os Dados da Empresa
 
 
 
